@@ -515,11 +515,23 @@ data class AuthorizationList(
       logFn: (String) -> Unit = { _ -> },
       inputLimits: InputLimits = InputLimits(),
     ): AuthorizationList {
-      val objects = seq.associate {
-        require(it is ASN1TaggedObject) {
-          "Must be an ASN1TaggedObject, was ${it::class.simpleName}"
+      val objects = mutableMapOf<KeyMintTag, ASN1Encodable>()
+      for (element in seq) {
+        require(element is ASN1TaggedObject) {
+          "Must be an ASN1TaggedObject, was ${element::class.simpleName}"
         }
-        KeyMintTag.from(it.tagNo) to it.explicitBaseObject
+        val tag = KeyMintTag.from(element.tagNo)
+        val value = element.explicitBaseObject
+        val existingValue = objects[tag]
+        if (existingValue != null) {
+          if (
+            !existingValue.toASN1Primitive().encoded.contentEquals(value.toASN1Primitive().encoded)
+          ) {
+            throw ExtensionParsingException("Duplicate tag $tag with different values")
+          }
+        } else {
+          objects[tag] = value
+        }
       }
 
       /**
