@@ -18,7 +18,7 @@ on:
   push:
     tags:
       - 'v*'
-  workflow:
+  workflow_dispatch:
     inputs:
       tags:
         description: 'Version'
