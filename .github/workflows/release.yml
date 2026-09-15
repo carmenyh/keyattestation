@@ -18,6 +18,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow:
+    inputs:
+      tags:
+        description: 'Version'
+        required: true
+        type: string
 
 permissions:
   contents: write
